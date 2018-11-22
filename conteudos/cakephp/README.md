@@ -114,7 +114,7 @@ O cíclo de requisição do CakePHP começa com a solicitação de uma página o
 1. As regras de reescrita do servidor encaminham a requisição para webroot/index.php.
 2. Sua aplicação é carregada e vinculada a um `HttpServer`.
 3. O middleware da sua aplicação é inicializado.
-4. A requisição e a resposta são processados através do PSR-7 ([PHP Standards Recommendation](https://pt.stackoverflow.com/questions/32295/o-que-significa-psr)) Middleware que sua aplicação utiliza. Normalmente isso inclui captura de erros e roteamento.
+4. A requisição e a resposta são processados através do PSR-7 Middleware ([PHP Standards Recommendation](https://pt.stackoverflow.com/questions/32295/o-que-significa-psr)) que sua aplicação utiliza. Normalmente isso inclui captura de erros e roteamento.
 5. Se nenhuma resposta for retornada do middleware e a requisição contiver informações de rota, um Controller e uma action são acionados.
 6. A action do Controller é chamada e o mesmo interage com os Models e Components requisitados.
 7. O controller delega a responsabilidade de criar respostas à view, para assim gerar a saída de dados resultante do Model.
@@ -123,6 +123,146 @@ O cíclo de requisição do CakePHP começa com a solicitação de uma página o
 10. O HttpServer emite a resposta para o servidor web.
 
 
+# Prática - Como desenvolver o básico de um blog
+
+Antes de iniciarmos, devemos nos certificar de que seu ambiente de desenvolvimento atende aos seguintes pré-requisitos:
+
+* Apache com mod_rewrite habilitado;
+* Banco de dados MySQL instalado; e
+* PHP 5.6.0 ou superior, configurado;
+* Extensões PHP instaladas e habilitadas: mbstring; intl; e simplexml;
+* PHP-cli configurado globalmente;
+* Composer instalado globalmente.
+
+> Como nosso grupo possui maioria de estudantes com computadores com o SO Windows, será considerado que o ambiente foi preparado com o Xampp.
+
+Para verificar se está tudo certo, vá ao diretório do xampp `./htdocs`; crie um diretório `ambiente` e dentro dessa pasta crie um arquivo `index.php` com o seguinte código:
+
+```php
+
+<?php echo phpinfo();
+
+```
+Acesse `localhost/ambiente`; Isso permitirá que você veja quais são as extensões habilitadas para seu ambiente.
 
 
-composer self-update && composer create-project --prefer-dist cakephp/app cms
+## Mãos ao código
+
+Abra o terminal e navegue até `./htdocs/`; Em seguida, digite o seguinte comando: `composer self-update && composer create-project --prefer-dist cakephp/app blog`.
+Esse comando solicitará ao composer para instalar o CakePHP no diretório `./blog`.
+
+Após o composer concluir a instalação, acesse `localhost/blog`. Você deve ver a seguinte tela:
+
+![CakePHP - Instalação](/conteudos/cakephp/img/instalacao.png)
+
+O próximo passo é configurar o banco de dados.
+
+- Crie um banco de dados com o nome `blog` usando o SGBD de preferência;
+- Em seguida no diretório do seu projeto (`./htdocs/blog`), vá ao diretório `./app` e edite o `DataSource` no arquivo `app.php`, conforme o código abaixo:
+
+```php
+'Datasources' => [
+        'default' => [
+            'className' => 'Cake\Database\Connection',
+            'driver' => 'Cake\Database\Driver\Mysql',
+            'persistent' => false,
+            'host' => 'localhost',
+            /*
+             * CakePHP will use the default DB port based on the driver selected
+             * MySQL on MAMP uses port 8889, MAMP users will want to uncomment
+             * the following line and set the port accordingly
+             */
+            //'port' => 'non_standard_port_number',
+            'username' => 'root',
+            'password' => '',
+            'database' => 'blog',
+            /*
+             * You do not need to set this flag to use full utf-8 encoding (internal default since CakePHP 3.6).
+             */
+            //'encoding' => 'utf8mb4',
+            'timezone' => 'UTC',
+            'flags' => [],
+            'cacheMetadata' => true,
+            'log' => false,
+
+            /**
+             * Set identifier quoting to true if you are using reserved words or
+             * special characters in your table or column names. Enabling this
+             * setting will result in queries built using the Query Builder having
+             * identifiers quoted when creating SQL. It should be noted that this
+             * decreases performance because each query needs to be traversed and
+             * manipulated before being executed.
+             */
+            'quoteIdentifiers' => false,
+
+            /**
+             * During development, if using MySQL < 5.6, uncommenting the
+             * following line could boost the speed at which schema metadata is
+             * fetched from the database. It can also be set directly with the
+             * mysql configuration directive 'innodb_stats_on_metadata = 0'
+             * which is the recommended value in production environments
+             */
+            //'init' => ['SET GLOBAL innodb_stats_on_metadata = 0'],
+
+            'url' => env('DATABASE_URL', null),
+        ],
+```
+
+Feito isso, atualize a página inicial de sua aplicação e veja se a configuração do banco é resolvida, conforme a imagem abaixo:
+
+![CakePHP - Banco Configurado](/conteudos/cakephp/img/banco-configurado.png)
+
+Se estiver tudo certo, significa que podemos avançar para a próxima etapa. A criação da tabela por meio de Migrações.
+
+## Migrações com CakePHP
+
+O CakePHP implementa um algoritmo de migrações capaz de abstrair a camada física do banco de dados para uma camada lógica interoperável. São conhecidas aqui como [*Migrations*](https://book.cakephp.org/3.0/en/phinx/migrations.html).
+Para representarmos uma entidade `Articles (id:integer, title:string:limit=50, body:string, created:datetime, modified:datetime)` utilizando esse mecanismo podemos seguir as seguintes etapas:
+
+- Com o uso do [Gerador de Código](https://book.cakephp.org/3.0/pt/bake/usage.html) criaremos o arquivo de base da migração. Para isso, acesse por linha de comando o diretório `./blog/bin` e execute o seguinte comando: `cake bake migration CreateArticles`;
+	- Acesse a pasta `./config/Migrations` e veja se existe um arquivo com nome <<SUFIXO>>_CreateArticles.php;
+	- Caso exista, insira nele o seguinte código:
+
+```php
+<?php
+use Migrations\AbstractMigration;
+
+class CreateArticles extends AbstractMigration
+{
+    /**
+     * Change Method.
+     *
+     * More information on this method is available here:
+     * http://docs.phinx.org/en/latest/migrations.html#the-change-method
+     * @return void
+     */
+    public function change()
+    {
+    	# Quando é utilizado a opção id=false, estou configurando um ID diferente do padrão criado automaticamente pelo framework
+        $table = $this->table('articles', ['id'=>false]);
+        $table
+        ->addColumn('id', 'integer', ['autoIncrement'=>true])
+        ->addColumn('title', 'string', ['limit'=>50])
+        ->addColumn('body', 'string')
+        ->addColumn('created', 'datetime')
+        ->addColumn('modified', 'datetime')
+        ->addPrimaryKey('id')
+        ->create();
+    }
+}
+
+
+```
+
+- Em seguida, abra o terminal no diretório `./blog/bin` e execute o comando: `cake migrations migrate`.
+	- Esse comando vai criar a tabela `Articles` no banco.
+
+## Criando o CRUD usando o Gerador de Código
+
+Considerando que utilizamos as convenções estabelecidas para o CakePHP, o uso do Gerador de Código será um verdadeiro ganho de tempo em termos de definição de telas padrões. Para utilizarmos, acesse a pasta `./blog/bin` e execute o comando: `cake bake all Articles`.
+Com esse comando, criamos a camada Model-View-Controller para a entidade Articles.
+Para testar acesse: `localhost/blog/articles`; veja se a tela exibida é semelhante ao da Figura a seguir:
+
+![CakePHP - Articles, index](/conteudos/cakephp/img/articles-index.png)
+
+A partir daí, as operações de criação, edição, listagem e exclusão estão funcionando para essa entidade.
