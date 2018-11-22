@@ -109,7 +109,7 @@ public function add()
 
 O cíclo de requisição do CakePHP começa com a solicitação de uma página ou recurso da sua aplicação, seguindo a cadência abaixo:
 
-![Ciclo de Requisições do CakePHP](/img/ciclo-cake.png)
+![Ciclo de Requisições do CakePHP](/conteudos/cakephp/img/ciclo-cake.png)
 
 1. As regras de reescrita do servidor encaminham a requisição para webroot/index.php.
 2. Sua aplicação é carregada e vinculada a um `HttpServer`.
@@ -121,3 +121,8 @@ O cíclo de requisição do CakePHP começa com a solicitação de uma página o
 8. A View utiliza Helpers e Cells para gerar o corpo e cabeçalho das respostas.
 9. A resposta é enviada de volta através do Middleware.
 10. O HttpServer emite a resposta para o servidor web.
+
+
+
+
+composer self-update && composer create-project --prefer-dist cakephp/app cms
