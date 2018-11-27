@@ -1,4 +1,4 @@
-#Tarefas
+# Tarefas
 
 Vimos na seção principal desse conteúdo que o CakePHP é capaz de otimizar o processo de entregas de aplicações de baixa e alta complexidade. Recursos como Migrações e Gerador de Código, garantem um aumento expressivo na velocidade de desenvolvimento.
 Com o objetivo de atestar os conhecimentos passados anteriormente, serão sugeridos 2 tipos de exercícios. A realização deles deve ser feita em pares.
@@ -34,9 +34,9 @@ Ash é um mestre pokémon, e como vocês são amigos de longa data ele te pediu 
 3. Cadastrar pokémon com: Nome; Data de captura; Peso; Altura; e quais são seus principais ataques;
 
 ### Restrição
-- Não é necessário uso de máscaras nos campos;
-- Não é necessário criar mecanismo de autenticação de usuário; 
-- No cadastro de informações será necessário apenas indicar qual é o usuário relacionado.
+1. Não é necessário uso de máscaras nos campos;
+2. Não é necessário criar mecanismo de autenticação de usuário; 
+3. No cadastro de informações será necessário apenas indicar qual é o usuário relacionado.
 
 
 # Alguns links que poderão ajudar
